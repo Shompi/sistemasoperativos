@@ -51,7 +51,7 @@ int main()
   }
 
 semaforo:
-  semid = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT); // Obtiene la id de un arreglo de semáforos, el primero argumento de semget()
+  semid = semget(IPC_PRIVATE, 1, 0666 | IPC_CREAT); // Obtiene la id de un arreglo de semáforos, el primer argumento de semget()
                                                     // define la visibilidad del arreglo con respecto a otro procesos que distinta jerarquia, en
                                                     // este caso, es privado, solo procesos de la misma jerarquia podrá visualizar el semáforo.
                                                     // 1 significa la dimensión del arreglo que semáforos
