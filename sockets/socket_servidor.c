@@ -27,9 +27,10 @@ int main() {
     if( bind( sockfd, (struct sockaddr*) &servidor, sizeof(servidor) ) != 0 ) { // Inicializa el socket para el uso local (eventualmente también se puede remotamente)
         return -1;
     }
-    
-    if( listen(sockfd, 1) != 0 ) { // Establece cuandos usuarios se van a conectar, en este caso se establece solo uno.
-        return -1;
+
+    if (listen(sockfd, 1) != 0)
+    { // Establece cuantos usuarios se van a conectar, en este caso se establece solo uno.
+      return -1;
     }
     printf("Esperando cliente...\n");
     connfd = accept(sockfd, &cliente, &lencli); // Espera hasta que se conecte un cliente y se almancena su información
