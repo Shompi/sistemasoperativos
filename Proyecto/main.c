@@ -1,7 +1,3 @@
-// TRABAJO DE SISTEMAS OPERATIVOS
-// GRUPO 10: BAYRON REYES Y JAVIER GONZALEZ
-//
-// LIBRERIAS PRECARGADAS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -10,7 +6,6 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <errno.h>
-//
 
 struct ProcesoFIFO
 {
@@ -29,96 +24,112 @@ struct ProcesoPNE
 // Funciones
 int validar_parametros(int argc, char **argv)
 {
-  // RETORNA 1 SI SE UTILIZARA EL ALGORITMO FIFO
+
+  // Recordar que argv[0] es el nombre del programa.
+  // fifo
   if (strcmp(argv[1], "-F") == 0 && argc == 3)
     return 1;
-  // RETORNA 2 SI SE UTILIZARA EL ALGORITMO ROUND ROBIN
+  // round robin con quantum
   if (strcmp(argv[1], "-R") == 0 && strcmp(argv[3], "-Q") == 0 && argc == 5)
     return 2;
-  // RETORNA 3 SI SE UTILIZARA EL ALGORITMO DE PRIORIDADES NO EXPULSIVO
-  if (strcmp(argv[1], "-P") == 0 && strcmp(argv[3], "-p") == 0 && argc == 7)
+  // Prioridad no expulsivo
+  if (strcmp(argv[1], "-P") == 0 && strcmp(argv[3], "-p") == 0)
     return 3;
-  // RETORNA 0 EN EL CASO DE QUE LOS PARAMETROS SEAN INCORRECTOS
   else
     return 0;
 };
 
 void FIFO(int argc, char **argv)
 {
-  printf("\tEl proceso padre comienza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
-  struct ProcesoFIFO procesos[atoi(argv[2])];           // CREA LA ESTRUCTURA DEFINIDA PARA EL PROCESO DE PLANIFICACION
-  // CREA LOS PROCESOS PARA EJECUTAR EL ALGORITMO
-  for (int i = 0; i < atoi(argv[2]); i++)
+  printf("\tEl proceso padre comienza su ejecucion\n");
+  int cant_procesos = atoi(argv[2]);
+
+  struct ProcesoFIFO procesos[cant_procesos];
+
+  int i;
+  // Creamos los procesos
+  for (i = 0; i < cant_procesos; i++)
   {
-    procesos[i].id = fork(); // CREA UN PROCESO Y ALMACENA SU ID EN UN ARREGLO DE TIPO PROCESOFIFO
+    procesos[i].id = fork();
+
     if (procesos[i].id == 0)
-    {                                                    // EJECUTA EL PROCESOFIFO
-      printf("\t\tID del proceso hijo: %d\n", getpid()); // MUESTRA LA ID DEL PROCESO HIJO POR PANTALLA
-      kill(getpid(), SIGSTOP);                           // PAUSA LA EJECUCION DEL PROCESO HIJO
-      execl("loop", "loop", (char *)NULL);               // UTILIZA LA CLASE LA FUNCION LOOP, DE EL PROGRAMA LOOP.C
+    {
+
+      kill(getpid(), SIGSTOP); // Pausamos al hijo con sgstop
+      execl("loop", "loop", (char *)NULL);
     }
   }
-  sleep(1);   // ESPERA UN MOMENTO ENTRE LA CREACION DE PROCESOS Y LA PLANIFICACION DE ESTOS
-  int estado; // VARIABLE AUXILIAR DE ESTADO RELACIONADO A LOS PROCESOS HIJO UTIL PARA LA PLANIFICACION
-  // PLANIFICACION MEDIANTE EL ALGORITMO FIFO
-  for (int i = 0; i < atoi(argv[2]); i++)
+  sleep(1);
+
+  int estado;
+
+  for (i = 0; i < cant_procesos; i++)
   {
-    printf("\t\tEl proceso hijo (id: %d) comienza su ejecucion\n", procesos[i].id); // INICIO DE EJECUCION DE UN PROCESO HIJO
-    kill(procesos[i].id, SIGCONT);                                                  // ENVIA LA SEÑAL AL PROCESO HIJO PARA QUE CONTINUE CON SU EJECUCION
-    wait(&estado);                                                                  // WAIT HASTA QUE EL PROCESO HIJO TERMINA SU EJECUCION
-    printf("\t\tEl proceso hijo (id: %d) finaliza su ejecucion\n", procesos[i].id); // FIN DE EJECUCION DE UN PROCESO HIJO
+    printf("\t\tEl Proceso %d se esta ejecutando\n", procesos[i].id);
+    kill(procesos[i].id, SIGCONT); // Enviamos señal al proceso hijo para que continue su ejecucion
+    wait(&estado);                 // Esperamos a que finalice
+    printf("\t\tEl                 Proceso %d ha finalizado\n", procesos[i].id);
   }
-  printf("\tEl proceso padre finaliza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
+  printf("\tHan finalizado todos los procesos.\nnEjecucion finalizada.\n");
 };
 
 void prioridadNoExp()
 {
+  /*Aun no implementado*/
 }
 
 void roundRobin(int argc, char **argv)
 {
-  printf("\tEl proceso padre comienza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
-  struct ProcesoRR procesos[atoi(argv[2])];             // CREA LA ESTRUCTURA DEFINIDA PARA EL PROCESO DE PLANIFICACION
-  // CREA LOS PROCESOS PARA EJECUTAR EL ALGORITMO
-  for (int i = 0; i < atoi(argv[2]); i++)
+  printf("\tCOMIENZA EJECUCION ROUND ROBIN\n");
+  int cant_procesos = atoi(argv[2]);
+  int quantum = atoi(argv[4]);
+  int q_restante;
+  int i;
+  struct ProcesoRR procesos[cant_procesos];
+
+  for (i = 0; i < cant_procesos; i++)
   {
-    procesos[i].id = fork(); // CREA UN PROCESO Y ALMACENA SU ID EN UN ARREGLO DE TIPO PROCESOFIFO
+    procesos[i].id = fork();
     if (procesos[i].id == 0)
-    {                                                    // EJECUTA EL PROCESOFIFO
-      printf("\t\tID del proceso hijo: %d\n", getpid()); // MUESTRA LA ID DEL PROCESO HIJO POR PANTALLA
-      kill(getpid(), SIGSTOP);                           // PAUSA LA EJECUCION DEL PROCESO HIJO
-      execl("loop", "loop", (char *)NULL);               // UTILIZA LA CLASE LA FUNCION LOOP, DE EL PROGRAMA LOOP.C
+    {
+      printf("\t\tID del proceso hijo: %d\n", getpid());
+      kill(getpid(), SIGSTOP);             // Dejamos al hijo en estado detenido
+      execl("loop", "loop", (char *)NULL); // Permutamos a loop
     }
   }
-  sleep(1);                 // ESPERA UN MOMENTO ENTRE LA CREACION DE PROCESOS Y LA PLANIFICACION DE ESTOS
-  int estado = 0;           // VARIABLE AUXILIAR DE ESTADO RELACIONADO A LOS PROCESOS HIJO UTIL PARA LA PLANIFICACION
-  int senal;                // VARIABLE AUXILIAR DE ESTADO DE LA SEÑAL ENVIADA AL PROCESO
-  signal(SIGCHLD, SIG_IGN); // IGNORA LAS SEÑALES DE LOS PROCESOS HIJO
-  while (estado == 0)
+  sleep(1);
+
+  int sig;
+  int status = 0;
+
+  signal(SIGCHLD, SIG_IGN);
+
+  while (status == 0)
   {
-    estado = 1;
-    for (int i = 0; i < atoi(argv[2]); i++)
+    status = 1;
+
+    for (i = 0; i < cant_procesos; i++)
     {
-      senal = kill(procesos[i].id, 0);
-      if (senal == 0)
+      for (q_restante = quantum; q_restante > 0; q_restante--)
       {
-        printf("\t\tEl proceso hijo (id: %d) comienza su ejecucion\n", procesos[i].id);
+
+        printf("\nENTRA -> el proceso %i\n", getpid());
         kill(procesos[i].id, SIGCONT);
-        sleep(atoi(argv[4]));
-        kill(procesos[i].id, SIGSTOP);
-        senal = kill(procesos[i].id, 0);
-        if (senal == 0)
-        { //!strcmp(errno,ESRCH
-          printf("\t\tEl proceso hijo (id: %d) pausa su ejecucion\n", procesos[i].id);
-          estado = 0; //No estado
-        }
+
+        if (q_restante)
+          continue;
         else
-          printf("\t\tEl proceso hijo (id: %d) finaliza su ejecucion\n", procesos[i].id);
+        {
+          kill(procesos[i].id, SIGSTOP);
+          printf("\nSALE <- proceso %i", getpid());
+        }
       }
     }
+
+    wait(NULL);
+    printf("\tEl proceso padre finaliza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
   }
-  printf("\tEl proceso padre finaliza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
-};
+}
 
 void imprimir_uso()
 {
@@ -134,7 +145,7 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  // Entero sin signo de 8 bits ya que no guardará un numero tan grande.
+  // Entero sin signo de 8 bits.
   u_int8_t valido = validar_parametros(argc, argv);
 
   switch (valido)
@@ -155,6 +166,6 @@ int main(int argc, char **argv)
     prioridadNoExp(argc, argv);
     break;
   }
-  printf("Programa finalizado\n\a");
+  printf("Programa finalizado\n");
   return 0;
-};
+}
