@@ -65,29 +65,29 @@ int main()
       {
 
         // Se reservan los recursos para lectura
-        /*         if (semop(semid, &p, 1) < 0)
+        if (semop(semid, &p, 1) < 0)
         {
           perror("semop p");
           exit(1);
-        } */
+        }
 
         // Leemos el mensaje en el hijo desde la memoria compartida
         printf("Proceso %i LEE: %s\n", getpid(), shared_memory);
 
         usleep(600000);
         // Libreamos los recursos y aumentamos el contador del semáforo
-        /*         if (semop(semid, &v, 1) < 0)
+        if (semop(semid, &v, 1) < 0)
         {
           perror("semop v");
           exit(1);
-        } */
+        }
 
         // Se reservan los recursos para escritura
-        /*         if (semop(semid, &p, 1) < 0)
+        if (semop(semid, &p, 1) < 0)
         {
           perror("semop p");
           exit(1);
-        } */
+        }
 
         // Escribimos un mensaje al azar
         crearMensaje(shared_memory);
@@ -96,11 +96,11 @@ int main()
 
         usleep(600000);
         // Libreamos los recursos y aumentamos el contador del semáforo
-        /*         if (semop(semid, &v, 1) < 0)
+        if (semop(semid, &v, 1) < 0)
         {
           perror("semop v");
           exit(1);
-        } */
+        }
       } while (1);
     }
   }

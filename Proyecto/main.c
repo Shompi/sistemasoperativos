@@ -73,9 +73,10 @@ void FIFO(int argc, char **argv)
   printf("\tHan finalizado todos los procesos.\nnEjecucion finalizada.\n");
 };
 
-void prioridadNoExp()
+void prioridadNoExp(argc, **argv)
 {
   /*Aun no implementado*/
+
 }
 
 void roundRobin(int argc, char **argv)
@@ -90,50 +91,51 @@ void roundRobin(int argc, char **argv)
   for (i = 0; i < cant_procesos; i++)
   {
     procesos[i].id = fork();
+
     if (procesos[i].id == 0)
     {
-      printf("\t\tID del proceso hijo: %d\n", getpid());
-      kill(getpid(), SIGSTOP);             // Dejamos al hijo en estado detenido
       execl("loop", "loop", (char *)NULL); // Permutamos a loop
+    }
+    else
+    {
+      printf("\t\tID del proceso creado: %i\n", procesos[i].id);
+      kill(procesos[i].id, SIGSTOP); // Dejamos al hijo en estado detenido
     }
   }
   sleep(1);
 
-  int sig;
-  int status = 0;
+  int estado;
 
-  signal(SIGCHLD, SIG_IGN);
-
-  while (status == 0)
+  for (i = 0; i < cant_procesos; i++)
   {
-    status = 1;
-
-    for (i = 0; i < cant_procesos; i++)
+    for (q_restante = quantum; q_restante > 0; q_restante--)
     {
-      for (q_restante = quantum; q_restante > 0; q_restante--)
+
+      printf("\nENTRA -> el proceso %i\n", getpid());
+      kill(procesos[i].id, SIGCONT);
+
+      if (q_restante)
+        continue;
+      else
       {
-
-        printf("\nENTRA -> el proceso %i\n", getpid());
-        kill(procesos[i].id, SIGCONT);
-
-        if (q_restante)
-          continue;
-        else
-        {
-          kill(procesos[i].id, SIGSTOP);
-          printf("\nSALE <- proceso %i", getpid());
-        }
+        kill(procesos[i].id, SIGSTOP);
+        printf("\nSALE <- proceso %i", getpid());
       }
     }
+    sleep(1);
+    }
 
-    wait(NULL);
-    printf("\tEl proceso padre finaliza su ejecucion\n"); // INICIO DE LA EJECUCION DEL PROCESO PADRE
-  }
+    wait(&estado);
+    printf("\tEl proceso padre finaliza su ejecucion\n");
 }
 
 void imprimir_uso()
 {
   printf("Como usar este programa:\n");
+  printf("Argumentos:\n");
+  printf("\tFIFO: -F [num_procesos]");
+  printf("\n\tRound Robin: -R [num_procesos] -Q [quantum]");
+  printf("\n\tPrioridades no Expulsivo: -P [num_procesos] -p [prioridad1 prioridad2 ... prioridadn\n");
 }
 
 int main(int argc, char **argv)
